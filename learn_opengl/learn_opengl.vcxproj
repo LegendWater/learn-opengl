@@ -132,11 +132,13 @@
   <ItemGroup>
     <ClCompile Include="E:\software\opengl\glad\src\glad.c" />
     <ClCompile Include="learn_opengl.cpp" />
+    <ClCompile Include="MCamera.cpp" />
     <ClCompile Include="MShader.cpp" />
     <ClCompile Include="MTexture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="macro.h" />
+    <ClInclude Include="MCamera.h" />
     <ClInclude Include="MShader.h" />
     <ClInclude Include="MTexture.h" />
     <ClInclude Include="shaders.h" />

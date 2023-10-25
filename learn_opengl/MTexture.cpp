@@ -22,6 +22,9 @@ MTexture2D::MTexture2D(int width, int height, TexFormat format, unsigned char* d
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
 	glTexImage2D(GL_TEXTURE_2D, 0, (int)format, width, height, 0, (int)format, GL_UNSIGNED_BYTE, data);
+	if (data) {
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
 }
 
 MTexture2D::MTexture2D(const char* path)
@@ -47,8 +50,11 @@ MTexture2D::MTexture2D(const char* path)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
 	glTexImage2D(GL_TEXTURE_2D, 0, (int)format, width, height, 0, (int)format, GL_UNSIGNED_BYTE, image_data);
+	if (image_data) {
+		glGenerateMipmap(GL_TEXTURE_2D);
+		stbi_image_free(image_data);
+	}
 
-	stbi_image_free(image_data);
 }
 
 inline GLuint MTexture2D::getId()

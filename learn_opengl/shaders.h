@@ -8,12 +8,13 @@ const char* shader_vert = R"(
 layout(location = 0) in vec3 aPos;
 layout(location = 1) in vec2 aTexCoord;
 
-uniform float coefficient;
-
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
 out vec2 TexCoord;
 
 void main() {
-	gl_Position = vec4(aPos, 1.0);
+	gl_Position = projection * view * model * vec4(aPos, 1.0);
 	TexCoord = aTexCoord;
 }
 )";
@@ -24,15 +25,11 @@ const char* shader_frag = R"(
 in vec2 TexCoord;
 out vec4 fragColor;
 
-uniform float coefficient;
 uniform sampler2D tex;
 uniform sampler2D tex2;
 
 void main() {
-	fragColor = mix(texture(tex, TexCoord), texture(tex2, TexCoord), 1.0);
-	//fragColor.x = mix(mix(fragColor.x, fragColor.y, cos(coefficient)), fragColor.z, coefficient);
-	//fragColor.y = mix(mix(fragColor.y, fragColor.z, cos(1 - coefficient)), fragColor.x, 1 - coefficient);
-	//fragColor.z = mix(mix(fragColor.z, fragColor.x, cos(0.5 * coefficient)), fragColor.y, 0.5 * coefficient);
+	fragColor = mix(texture(tex, TexCoord), texture(tex2, TexCoord), 0.1);
 }
 )";
 

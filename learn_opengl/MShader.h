@@ -4,6 +4,7 @@
 
 #include <glad\glad.h>
 #include <gltools.h>
+#include <glm.hpp>
 
 class MShader
 {
@@ -17,5 +18,6 @@ public:
 
 	void setInt(const char* param_name, GLint val);
 	void setFloat(const char* param_name, GLfloat val);
+	void setMat4(const char* param_name, glm::mat4 mat);
 };
 #endif // !MSHADER_H
