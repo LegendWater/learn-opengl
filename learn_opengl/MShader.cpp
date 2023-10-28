@@ -1,9 +1,13 @@
 #include "MShader.h"
-#include <gtc\type_ptr.hpp>
 
 MShader::MShader(const char* vs, const char* fs)
 {
 	program = genGLShaderProgram(vs, fs);
+}
+
+MShader::~MShader()
+{
+	glDeleteProgram(program);
 }
 
 void MShader::use()

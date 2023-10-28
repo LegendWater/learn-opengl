@@ -136,7 +136,23 @@ void MCamera::zoom(float radians_zoom)
 	else if (fov > glm::radians(89.0f)) fov = glm::radians(89.0f);
 
 	char buf[1024]{ 0 };
-	sprintf_s(buf, sizeof buf, "delta zoom=%.2f, after zoom fov=%.2f\n", radians_zoom, fov);
+	sprintf_s(buf, sizeof buf, "delta zoom=%.2f, after zoom fov=%.2f¡ã\n", radians_zoom, glm::degrees(fov));
+	OutputDebugStringA(buf);
+
+	updateProjection();
+}
+
+void MCamera::zoomTo(float radians_zoom)
+{
+	if (fov == radians_zoom) {
+		return;
+	}
+	fov = radians_zoom;
+	if (fov < 0.01f) fov = 0.01f;
+	else if (fov > glm::radians(89.0f)) fov = glm::radians(89.0f);
+
+	char buf[1024]{ 0 };
+	sprintf_s(buf, sizeof buf, "delta zoom=%.2f, after zoom fov=%.2f¡ã\n", radians_zoom, glm::degrees(fov));
 	OutputDebugStringA(buf);
 
 	updateProjection();

@@ -21,6 +21,8 @@ private:
 public:
 	MTexture2D(int width, int height, TexFormat format, unsigned char* data = nullptr);
 	MTexture2D(const char* path);
+	MTexture2D(const MTexture2D& tex);
+	~MTexture2D();
 
 	inline GLuint getId();
 	inline int getWidth();

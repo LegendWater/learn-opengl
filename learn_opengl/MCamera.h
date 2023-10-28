@@ -53,6 +53,7 @@ public:
 	void move(float front, float right, float up);
 	void moveTo(glm::vec3 pos);
 	void zoom(float radians_zoom);
+	void zoomTo(float radians_zoom);
 
 	glm::vec3 getPos();
 	glm::vec3 getFront();

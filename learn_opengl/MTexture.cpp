@@ -57,6 +57,16 @@ MTexture2D::MTexture2D(const char* path)
 
 }
 
+MTexture2D::MTexture2D(const MTexture2D& tex)
+	:id(tex.id), width(tex.width), height(tex.height), format(tex.format)
+{
+}
+
+MTexture2D::~MTexture2D()
+{
+	glDeleteTextures(1, &id);
+}
+
 inline GLuint MTexture2D::getId()
 {
 	return id;

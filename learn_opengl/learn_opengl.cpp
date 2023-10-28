@@ -14,6 +14,28 @@
 #include "MCamera.h"
 #include <chrono>
 
+typedef struct Vertex {
+    glm::vec3 pos;
+    glm::vec2 tex_coord;
+
+    Vertex() = default;
+    Vertex(float x, float y, float z, float s, float t) {
+        pos = glm::vec3(x, y, z);
+        tex_coord = glm::vec2(s, t);
+    }
+    Vertex(glm::vec3 pos, glm::vec2 tex_coord) {
+        this->pos = pos;
+        this->tex_coord = tex_coord;
+    }
+}Vertex;
+
+typedef struct Point3D {
+    glm::vec3 pos;
+
+    Point3D() : pos(0) {}
+    Point3D(float x, float y, float z) : pos({ x, y, z }) {}
+    Point3D(glm::vec3 pos) : pos(pos) {}
+}Point3D;
 
 //虽然不想但是好像除了把变量放在这也没有更好的办法了
 static int win_width = 900, win_height = 900;
@@ -37,30 +59,17 @@ int main()
 
     GLFWwindow* window = createWindow(win_width, win_height);
     glfwSetWindowPos(window, (1920 - win_width) / 2, (1080 - win_height) / 2);
-    glfwSetCursorPos(window, win_width / 2, win_height / 2);
+    glfwSetCursorPos(window, static_cast<double>(win_width / 2), static_cast<double>(win_height / 2));
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetKeyCallback(window, key_callback);
     glfwSetScrollCallback(window, scroll_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    MShader shader(shader_vert, shader_frag);
-    shader.use();
+#pragma region objects define
+    MShader shader_obj(shader_vert, shader_frag);
+    //shader_obj.use();
 
-    typedef struct Vertex {
-        glm::vec3 pos;
-        glm::vec2 tex_coord;
-
-        Vertex() = default;
-        Vertex(float x, float y, float z, float s, float t) {
-            pos = glm::vec3(x, y, z);
-            tex_coord = glm::vec2(s, t);
-        }
-        Vertex(glm::vec3 pos, glm::vec2 tex_coord) {
-            this->pos = pos;
-            this->tex_coord = tex_coord;
-        }
-    }Vertex;
-
+    //每个立方体的顶点和纹理坐标
     Vertex vertices[] = {
         /*Vertex{ -5,  5, 0.0,    0.0, 1.0},
         Vertex{  5,  5, 0.0,    1.0, 1.0},
@@ -108,12 +117,12 @@ int main()
         Vertex{ -0.5f,  0.5f,  0.5f,  0.0f, 0.0f},
         Vertex{ -0.5f,  0.5f, -0.5f,  0.0f, 1.0f}
     };
-
+    //立方体一个面4个顶点的下标
     int indices[] = {
         0, 1, 2,
         2, 3, 0
     };
-
+    //十个立方体在世界坐标系的位置
     glm::vec3 cube_positions[] = {
         glm::vec3(0.0f,  0.0f,  0.0f),
         glm::vec3(2.0f,  5.0f, -15.0f),
@@ -126,6 +135,8 @@ int main()
         glm::vec3(1.5f,  0.2f, -1.5f),
         glm::vec3(-1.3f,  1.0f, -1.5f)
     };
+    //立方体的颜色
+    glm::vec3 cube_color(0.91f, 0.55f, 0.08f);
 
     GLuint VAO, VBO, EBO;
     glGenVertexArrays(1, &VAO);
@@ -147,13 +158,92 @@ int main()
     MTexture2D tex_box(R"(F:\pictures\box.jpg)");
     MTexture2D tex_poster(R"(F:\pictures\11775.jpg)");
 
+    shader_obj.use();
     glActiveTexture(GL_TEXTURE0);
     tex_box.bind();
     glActiveTexture(GL_TEXTURE1);
     tex_poster.bind();
 
-    shader.setInt("tex", 0);
-    shader.setInt("tex2", 1);
+    shader_obj.setInt("tex", 0);
+    shader_obj.setInt("tex2", 1);
+    CHECK_GL_ERROR();
+#pragma endregion objects define
+#pragma region light source define
+    MShader shader_light_source(shader_light_source_vert, shader_light_source_frag);
+
+    //光源的结构(将光源视为立方体)
+    const glm::vec3 light_points[] = {
+        { -0.5f, -0.5f, -0.5f},
+        {  0.5f, -0.5f, -0.5f},
+        {  0.5f,  0.5f, -0.5f},
+        {  0.5f,  0.5f, -0.5f},
+        { -0.5f,  0.5f, -0.5f},
+        { -0.5f, -0.5f, -0.5f},
+
+        { -0.5f, -0.5f,  0.5f},
+        {  0.5f, -0.5f,  0.5f},
+        {  0.5f,  0.5f,  0.5f},
+        {  0.5f,  0.5f,  0.5f},
+        { -0.5f,  0.5f,  0.5f},
+        { -0.5f, -0.5f,  0.5f},
+
+        { -0.5f,  0.5f,  0.5f},
+        { -0.5f,  0.5f, -0.5f},
+        { -0.5f, -0.5f, -0.5f},
+        { -0.5f, -0.5f, -0.5f},
+        { -0.5f, -0.5f,  0.5f},
+        { -0.5f,  0.5f,  0.5f},
+
+        {  0.5f,  0.5f,  0.5f},
+        {  0.5f,  0.5f, -0.5f},
+        {  0.5f, -0.5f, -0.5f},
+        {  0.5f, -0.5f, -0.5f},
+        {  0.5f, -0.5f,  0.5f},
+        {  0.5f,  0.5f,  0.5f},
+
+        { -0.5f, -0.5f, -0.5f},
+        {  0.5f, -0.5f, -0.5f},
+        {  0.5f, -0.5f,  0.5f},
+        {  0.5f, -0.5f,  0.5f},
+        { -0.5f, -0.5f,  0.5f},
+        { -0.5f, -0.5f, -0.5f},
+
+        { -0.5f,  0.5f, -0.5f},
+        {  0.5f,  0.5f, -0.5f},
+        {  0.5f,  0.5f,  0.5f},
+        {  0.5f,  0.5f,  0.5f},
+        { -0.5f,  0.5f,  0.5f},
+        { -0.5f,  0.5f, -0.5f}
+    };
+    //光源在世界坐标系中的位置
+    const glm::vec3 light_pos = {
+        0.f,  0.f, -3.5f
+    };
+    //光源颜色
+    const glm::vec3 light_color = {1.0f, 1.0f, 1.0f};
+
+    GLuint VAO_light, VBO_light, EBO_light;
+    glGenVertexArrays(1, &VAO_light);
+    glGenBuffers(1, &VBO_light);
+    glGenBuffers(1, &EBO_light);
+
+    glBindVertexArray(VAO_light);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_light);
+    glBufferData(GL_ARRAY_BUFFER, sizeof light_points, light_points, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof GLfloat, (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_light);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof indices, indices, GL_STATIC_DRAW);
+
+    shader_light_source.use();
+    shader_light_source.setVec("color", light_color);
+    CHECK_GL_ERROR();
+#pragma endregion light source define
+
+    shader_obj.use();
+    shader_obj.setVec("light_color", light_color);
+    shader_obj.setVec("object_color", cube_color);
 
     //设置摄像机属性
     glm::vec3 cam_pos(0, 0, 10);
@@ -161,8 +251,7 @@ int main()
     constexpr float cam_fov = glm::radians(45.0f);
     cam.moveTo(cam_pos);
     cam.lookAt(cam_lookat);
-    cam.zoom(cam_fov);
-    shader.setMat4("view", cam.getView());
+    cam.zoomTo(cam_fov);
 
     ////定义投影矩阵
     //glm::mat4 projection(1.0f);
@@ -196,8 +285,12 @@ int main()
         float sin = glm::sin(time_point);
         float cos = glm::cos(time_point);
 
-        shader.setMat4("projection", cam.getProjection());
-        shader.setMat4("view", cam.getView());
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        shader_obj.use();
+        shader_obj.setMat4("projection", cam.getProjection());
+        shader_obj.setMat4("view", cam.getView());
+        shader_obj.setVec("light_color", glm::vec3(sin, cos, sin));
 
         if (0) { //CPU变换
             glm::mat4 model(1.0f);
@@ -212,16 +305,27 @@ int main()
             }
         }
         
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glBindVertexArray(VAO);
         for (int i = 0; i < 10; i++) { //绘制10个立方体
             glm::mat4 model(1.0f);
             //model = glm::rotate(model, glm::radians(25*(time_point + i)), glm::vec3(0, 1.0f, 1.0f));
             model = glm::translate(model, cube_positions[i]);
             model = glm::rotate(model, glm::radians(25 * (time_point + i)), glm::vec3(0, 1.0f, 1.0f));
-            shader.setMat4("model", model);
+            shader_obj.setMat4("model", model);
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
-        //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
+
+        glBindVertexArray(VAO_light);
+        shader_light_source.use();
+        shader_light_source.setVec("color", glm::vec3(sin, cos, sin));
+        glm::mat4 model(1.0f);
+        model = glm::translate(model, light_pos);
+        model = glm::scale(model, glm::vec3(0.5));
+        shader_light_source.setMat4("model", model);
+        shader_light_source.setMat4("view", cam.getView());
+        shader_light_source.setMat4("projection", cam.getProjection());
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
         glfwSwapBuffers(window);
 
         glfwPollEvents();
@@ -231,6 +335,13 @@ int main()
 
     auto end_time = std::chrono::steady_clock::now();
 
+    //clean up
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteVertexArrays(1, &VAO_light);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
+    glDeleteBuffers(1, &VBO_light);
+    glDeleteBuffers(1, &EBO_light);
     glfwTerminate();
 
     auto time_total = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
@@ -252,7 +363,7 @@ int main()
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
-    static double last_x = win_width / 2, last_y = win_height / 2;
+    static double last_x = static_cast<double>(win_width / 2), last_y = static_cast<double>(win_height / 2);
     static const double move_rate = 0.12;
     //计算pitch俯仰角、yaw偏航角, 不考虑roll翻滚角
     float xoffset = (last_x - xpos) * move_rate;
