@@ -16,17 +16,17 @@
 
 typedef struct Vertex {
     glm::vec3 pos;
+    glm::vec3 normal;
     glm::vec2 tex_coord;
 
     Vertex() = default;
-    Vertex(float x, float y, float z, float s, float t) {
+    Vertex(float x, float y, float z, float nx, float ny, float nz, float s, float t) {
         pos = glm::vec3(x, y, z);
+        normal = glm::vec3(nx, ny, nz);
         tex_coord = glm::vec2(s, t);
     }
-    Vertex(glm::vec3 pos, glm::vec2 tex_coord) {
-        this->pos = pos;
-        this->tex_coord = tex_coord;
-    }
+    Vertex(glm::vec3 pos, glm::vec3 normal, glm::vec2 tex_coord)
+    :pos(pos), normal(normal), tex_coord(tex_coord) {}
 }Vertex;
 
 typedef struct Point3D {
@@ -75,47 +75,48 @@ int main()
         Vertex{  5,  5, 0.0,    1.0, 1.0},
         Vertex{  5, -5, 0.0,    1.0, 0.0},
         Vertex{ -5, -5, 0.0,    0.0, 0.0},*/
-        Vertex{ -0.5f, -0.5f, -0.5f,  0.0f, 0.0f},
-        Vertex{  0.5f, -0.5f, -0.5f,  1.0f, 0.0f},
-        Vertex{  0.5f,  0.5f, -0.5f,  1.0f, 1.0f},
-        Vertex{  0.5f,  0.5f, -0.5f,  1.0f, 1.0f},
-        Vertex{ -0.5f,  0.5f, -0.5f,  0.0f, 1.0f},
-        Vertex{ -0.5f, -0.5f, -0.5f,  0.0f, 0.0f},
+        /*             position               normal               tex*/
+        Vertex{ -0.5f, -0.5f, -0.5f,    0.0f,  0.0f, -1.0f,    0.0f, 0.0f},
+        Vertex{  0.5f, -0.5f, -0.5f,    0.0f,  0.0f, -1.0f,    1.0f, 0.0f},
+        Vertex{  0.5f,  0.5f, -0.5f,    0.0f,  0.0f, -1.0f,    1.0f, 1.0f},
+        Vertex{  0.5f,  0.5f, -0.5f,    0.0f,  0.0f, -1.0f,    1.0f, 1.0f},
+        Vertex{ -0.5f,  0.5f, -0.5f,    0.0f,  0.0f, -1.0f,    0.0f, 1.0f},
+        Vertex{ -0.5f, -0.5f, -0.5f,    0.0f,  0.0f, -1.0f,    0.0f, 0.0f},
 
-        Vertex{ -0.5f, -0.5f,  0.5f,  0.0f, 0.0f},
-        Vertex{  0.5f, -0.5f,  0.5f,  1.0f, 0.0f},
-        Vertex{  0.5f,  0.5f,  0.5f,  1.0f, 1.0f},
-        Vertex{  0.5f,  0.5f,  0.5f,  1.0f, 1.0f},
-        Vertex{ -0.5f,  0.5f,  0.5f,  0.0f, 1.0f},
-        Vertex{ -0.5f, -0.5f,  0.5f,  0.0f, 0.0f},
+        Vertex{ -0.5f, -0.5f,  0.5f,    0.0f,  0.0f,  1.0f,    0.0f, 0.0f},
+        Vertex{  0.5f, -0.5f,  0.5f,    0.0f,  0.0f,  1.0f,    1.0f, 0.0f},
+        Vertex{  0.5f,  0.5f,  0.5f,    0.0f,  0.0f,  1.0f,    1.0f, 1.0f},
+        Vertex{  0.5f,  0.5f,  0.5f,    0.0f,  0.0f,  1.0f,    1.0f, 1.0f},
+        Vertex{ -0.5f,  0.5f,  0.5f,    0.0f,  0.0f,  1.0f,    0.0f, 1.0f},
+        Vertex{ -0.5f, -0.5f,  0.5f,    0.0f,  0.0f,  1.0f,    0.0f, 0.0f},
 
-        Vertex{ -0.5f,  0.5f,  0.5f,  1.0f, 0.0f},
-        Vertex{ -0.5f,  0.5f, -0.5f,  1.0f, 1.0f},
-        Vertex{ -0.5f, -0.5f, -0.5f,  0.0f, 1.0f},
-        Vertex{ -0.5f, -0.5f, -0.5f,  0.0f, 1.0f},
-        Vertex{ -0.5f, -0.5f,  0.5f,  0.0f, 0.0f},
-        Vertex{ -0.5f,  0.5f,  0.5f,  1.0f, 0.0f},
+        Vertex{ -0.5f,  0.5f,  0.5f,   -1.0f,  0.0f,  0.0f,    1.0f, 0.0f},
+        Vertex{ -0.5f,  0.5f, -0.5f,   -1.0f,  0.0f,  0.0f,    1.0f, 1.0f},
+        Vertex{ -0.5f, -0.5f, -0.5f,   -1.0f,  0.0f,  0.0f,    0.0f, 1.0f},
+        Vertex{ -0.5f, -0.5f, -0.5f,   -1.0f,  0.0f,  0.0f,    0.0f, 1.0f},
+        Vertex{ -0.5f, -0.5f,  0.5f,   -1.0f,  0.0f,  0.0f,    0.0f, 0.0f},
+        Vertex{ -0.5f,  0.5f,  0.5f,   -1.0f,  0.0f,  0.0f,    1.0f, 0.0f},
 
-        Vertex{  0.5f,  0.5f,  0.5f,  1.0f, 0.0f},
-        Vertex{  0.5f,  0.5f, -0.5f,  1.0f, 1.0f},
-        Vertex{  0.5f, -0.5f, -0.5f,  0.0f, 1.0f},
-        Vertex{  0.5f, -0.5f, -0.5f,  0.0f, 1.0f},
-        Vertex{  0.5f, -0.5f,  0.5f,  0.0f, 0.0f},
-        Vertex{  0.5f,  0.5f,  0.5f,  1.0f, 0.0f},
+        Vertex{  0.5f,  0.5f,  0.5f,    1.0f,  0.0f,  0.0f,    1.0f, 0.0f},
+        Vertex{  0.5f,  0.5f, -0.5f,    1.0f,  0.0f,  0.0f,    1.0f, 1.0f},
+        Vertex{  0.5f, -0.5f, -0.5f,    1.0f,  0.0f,  0.0f,    0.0f, 1.0f},
+        Vertex{  0.5f, -0.5f, -0.5f,    1.0f,  0.0f,  0.0f,    0.0f, 1.0f},
+        Vertex{  0.5f, -0.5f,  0.5f,    1.0f,  0.0f,  0.0f,    0.0f, 0.0f},
+        Vertex{  0.5f,  0.5f,  0.5f,    1.0f,  0.0f,  0.0f,    1.0f, 0.0f},
 
-        Vertex{ -0.5f, -0.5f, -0.5f,  0.0f, 1.0f},
-        Vertex{  0.5f, -0.5f, -0.5f,  1.0f, 1.0f},
-        Vertex{  0.5f, -0.5f,  0.5f,  1.0f, 0.0f},
-        Vertex{  0.5f, -0.5f,  0.5f,  1.0f, 0.0f},
-        Vertex{ -0.5f, -0.5f,  0.5f,  0.0f, 0.0f},
-        Vertex{ -0.5f, -0.5f, -0.5f,  0.0f, 1.0f},
+        Vertex{ -0.5f, -0.5f, -0.5f,    0.0f, -1.0f,  0.0f,    0.0f, 1.0f},
+        Vertex{  0.5f, -0.5f, -0.5f,    0.0f, -1.0f,  0.0f,    1.0f, 1.0f},
+        Vertex{  0.5f, -0.5f,  0.5f,    0.0f, -1.0f,  0.0f,    1.0f, 0.0f},
+        Vertex{  0.5f, -0.5f,  0.5f,    0.0f, -1.0f,  0.0f,    1.0f, 0.0f},
+        Vertex{ -0.5f, -0.5f,  0.5f,    0.0f, -1.0f,  0.0f,    0.0f, 0.0f},
+        Vertex{ -0.5f, -0.5f, -0.5f,    0.0f, -1.0f,  0.0f,    0.0f, 1.0f},
 
-        Vertex{ -0.5f,  0.5f, -0.5f,  0.0f, 1.0f},
-        Vertex{  0.5f,  0.5f, -0.5f,  1.0f, 1.0f},
-        Vertex{  0.5f,  0.5f,  0.5f,  1.0f, 0.0f},
-        Vertex{  0.5f,  0.5f,  0.5f,  1.0f, 0.0f},
-        Vertex{ -0.5f,  0.5f,  0.5f,  0.0f, 0.0f},
-        Vertex{ -0.5f,  0.5f, -0.5f,  0.0f, 1.0f}
+        Vertex{ -0.5f,  0.5f, -0.5f,    0.0f,  1.0f,  0.0f,    0.0f, 1.0f},
+        Vertex{  0.5f,  0.5f, -0.5f,    0.0f,  1.0f,  0.0f,    1.0f, 1.0f},
+        Vertex{  0.5f,  0.5f,  0.5f,    0.0f,  1.0f,  0.0f,    1.0f, 0.0f},
+        Vertex{  0.5f,  0.5f,  0.5f,    0.0f,  1.0f,  0.0f,    1.0f, 0.0f},
+        Vertex{ -0.5f,  0.5f,  0.5f,    0.0f,  1.0f,  0.0f,    0.0f, 0.0f},
+        Vertex{ -0.5f,  0.5f, -0.5f,    0.0f,  1.0f,  0.0f,    0.0f, 1.0f}
     };
     //立方体一个面4个顶点的下标
     int indices[] = {
@@ -136,7 +137,7 @@ int main()
         glm::vec3(-1.3f,  1.0f, -1.5f)
     };
     //立方体的颜色
-    glm::vec3 cube_color(0.91f, 0.55f, 0.08f);
+    glm::vec3 cube_color(0.914f, 0.753f, 0.580f);
 
     GLuint VAO, VBO, EBO;
     glGenVertexArrays(1, &VAO);
@@ -147,10 +148,12 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
     glBufferData(GL_ARRAY_BUFFER, sizeof vertices, vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof GLfloat, (void*)0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof GLfloat, (void*)(3 * sizeof GLfloat));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof GLfloat, (void*)0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof GLfloat, (void*)(3 * sizeof GLfloat));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof GLfloat, (void*)(6 * sizeof GLfloat));
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof indices, indices, GL_STATIC_DRAW);
@@ -290,7 +293,9 @@ int main()
         shader_obj.use();
         shader_obj.setMat4("projection", cam.getProjection());
         shader_obj.setMat4("view", cam.getView());
-        shader_obj.setVec("light_color", glm::vec3(sin, cos, sin));
+        shader_obj.setVec("light_color", glm::vec3(sin, cos, 1 - sin));
+        shader_obj.setVec("light_pos", light_pos);
+        shader_obj.setVec("view_pos", cam.getPos());
 
         if (0) { //CPU变换
             glm::mat4 model(1.0f);
@@ -310,20 +315,20 @@ int main()
             glm::mat4 model(1.0f);
             //model = glm::rotate(model, glm::radians(25*(time_point + i)), glm::vec3(0, 1.0f, 1.0f));
             model = glm::translate(model, cube_positions[i]);
-            model = glm::rotate(model, glm::radians(25 * (time_point + i)), glm::vec3(0, 1.0f, 1.0f));
+            model = glm::rotate(model, glm::radians(25.0f * (time_point + i)), glm::vec3(0, 1.0f, 1.0f));
             shader_obj.setMat4("model", model);
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
-        glBindVertexArray(VAO_light);
         shader_light_source.use();
-        shader_light_source.setVec("color", glm::vec3(sin, cos, sin));
+        shader_light_source.setVec("color", glm::vec3(sin, cos, 1 - sin));
         glm::mat4 model(1.0f);
         model = glm::translate(model, light_pos);
         model = glm::scale(model, glm::vec3(0.5));
         shader_light_source.setMat4("model", model);
         shader_light_source.setMat4("view", cam.getView());
         shader_light_source.setMat4("projection", cam.getProjection());
+        glBindVertexArray(VAO_light);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
         glfwSwapBuffers(window);
