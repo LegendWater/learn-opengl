@@ -22,7 +22,7 @@ public:
 	void setInt(const char* param_name, GLint val);
 	void setFloat(const char* param_name, GLfloat val);
 	template<glm::length_t N, typename T, glm::qualifier Q>
-	void setVec(const char* param_name, glm::vec<N, T, Q> vals)
+	void setVec(const char* param_name, const glm::vec<N, T, Q>& vals)
 	{
 		const auto& t = typeid(T);
 		if (t == typeid(float)) {

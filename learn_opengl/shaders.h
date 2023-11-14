@@ -36,32 +36,43 @@ out vec4 FragColor;
 uniform sampler2D tex;
 uniform sampler2D tex2;
 
-uniform vec3 light_pos;
 uniform vec3 view_pos;
-uniform vec3 light_color; //如果有好多光照呢
-uniform vec3 object_color;
 
-const float ambientStrength = 0.1;
-const float diffuseStrength = 0.5;
-const float specularStrength = 0.5;
+struct Material {
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+	float shininess;
+};
+
+struct Light {
+	vec3 pos;
+	vec3 ambient; //把光照的环境光强度之类的属性设置给材质会不会更好一点?
+	vec3 diffuse;
+	vec3 specular;
+};
+
+uniform Material material;
+uniform Light light; //如果有好多光照呢
 
 vec4 ambient() {
-	vec3 ambient_color = light_color * object_color * ambientStrength;
+	vec3 ambient_color = light.ambient * material.ambient;
 	return vec4(ambient_color, 1.0);
 }
 
 vec4 diffuse(vec3 light_direction, vec3 normal) {
-	float diff = dot(-light_direction, normal); //漫反射分量, TODO: 把Normal的归一化放在顶点着色器做
+	float diff = dot(-light_direction, normal); //漫反射强度, TODO: 把Normal的归一化放在顶点着色器做
 	diff = max(diff, 0);
-	vec3 diffu = vec3(diff * diffuseStrength * light_color);
-	return vec4(diffu, 1.0);
+	vec3 diffuse_color = diff * material.diffuse * light.diffuse;
+	
+	return vec4(diffuse_color, 1.0);
 }
 
 vec4 specular(vec3 light_direction, vec3 normal, vec3 view_direction) {
 	vec3 reflect_direction = reflect(light_direction, normal);
-	float reflect_light = dot(reflect_direction, view_direction);
-	reflect_light = pow(max(reflect_light, 0.0), 32);
-	vec3 reflect_color = reflect_light * specularStrength * light_color;
+	float spec = dot(reflect_direction, view_direction); //镜面反光强度
+	spec = pow(max(spec, 0.0), material.shininess);
+	vec3 reflect_color = spec * material.specular * light.specular;
 	return vec4(reflect_color, 1.0);
 }
 
@@ -71,7 +82,7 @@ vec4 phone(vec3 light_direction, vec3 normal, vec3 view_direction) {
 
 void main() {
 
-	vec3 light_direction = normalize(worldFragPos - light_pos); //光线出射方向
+	vec3 light_direction = normalize(worldFragPos - light.pos); //光线出射方向
 	vec3 normal = normalize(Normal); //面法线向量
 	vec3 view_direction = normalize(view_pos - worldFragPos); //片段位置指向观察者方向
 

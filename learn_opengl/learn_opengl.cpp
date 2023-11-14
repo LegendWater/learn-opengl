@@ -293,9 +293,15 @@ int main()
         shader_obj.use();
         shader_obj.setMat4("projection", cam.getProjection());
         shader_obj.setMat4("view", cam.getView());
-        shader_obj.setVec("light_color", glm::vec3(sin, cos, 1 - sin));
-        shader_obj.setVec("light_pos", light_pos);
         shader_obj.setVec("view_pos", cam.getPos());
+        shader_obj.setVec("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
+        shader_obj.setVec("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
+        shader_obj.setVec("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+        shader_obj.setFloat("material.shininess", 32.0f);
+        shader_obj.setVec("light.pos", light_pos);
+        shader_obj.setVec("light.ambient", 0.2f * glm::vec3(sin, cos, 1 - sin) * light_color);
+        shader_obj.setVec("light.diffuse", 0.5f * glm::vec3(sin, cos, 1 - sin) * light_color);
+        shader_obj.setVec("light.specular", 1.0f * glm::vec3(sin, cos, 1 - sin) * light_color);
 
         if (0) { //CPU变换
             glm::mat4 model(1.0f);
@@ -321,7 +327,7 @@ int main()
         }
 
         shader_light_source.use();
-        shader_light_source.setVec("color", glm::vec3(sin, cos, 1 - sin));
+        shader_light_source.setVec("color", glm::vec3(sin, cos, 1 - sin)/*glm::vec3(1.0f)*/);
         glm::mat4 model(1.0f);
         model = glm::translate(model, light_pos);
         model = glm::scale(model, glm::vec3(0.5));
