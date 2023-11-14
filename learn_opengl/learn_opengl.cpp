@@ -42,6 +42,9 @@ static int win_width = 900, win_height = 900;
 MCamera cam;
 static float time_point = 0.f, prev_time_point = 0.f, time_delta = 0.f; //这一帧的时间、上一帧的时间、时间间隔, 单位秒
 
+static bool switch_change_light_color = true; //光源的颜色随时间改变
+static bool switch_rotate_objects = true; //物体随时间自转
+
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -158,17 +161,17 @@ int main()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof indices, indices, GL_STATIC_DRAW);
 
-    MTexture2D tex_box(R"(F:\pictures\box.jpg)");
-    MTexture2D tex_poster(R"(F:\pictures\11775.jpg)");
+    MTexture2D tex_box_diffuse(R"(F:\pictures\box(1)_diffuse.png)");
+    MTexture2D tex_box_specular(R"(F:\pictures\box(1)_specular.png)");
 
     shader_obj.use();
     glActiveTexture(GL_TEXTURE0);
-    tex_box.bind();
+    tex_box_diffuse.bind();
     glActiveTexture(GL_TEXTURE1);
-    tex_poster.bind();
+    tex_box_specular.bind();
 
-    shader_obj.setInt("tex", 0);
-    shader_obj.setInt("tex2", 1);
+    shader_obj.setInt("material.diffuse", 0);
+    shader_obj.setInt("material.specular", 1);
     CHECK_GL_ERROR();
 #pragma endregion objects define
 #pragma region light source define
@@ -245,8 +248,8 @@ int main()
 #pragma endregion light source define
 
     shader_obj.use();
-    shader_obj.setVec("light_color", light_color);
-    shader_obj.setVec("object_color", cube_color);
+    //shader_obj.setVec("light_color", light_color); 居然没报错
+    //shader_obj.setVec("object_color", cube_color);
 
     //设置摄像机属性
     glm::vec3 cam_pos(0, 0, 10);
@@ -295,13 +298,15 @@ int main()
         shader_obj.setMat4("view", cam.getView());
         shader_obj.setVec("view_pos", cam.getPos());
         shader_obj.setVec("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
-        shader_obj.setVec("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
-        shader_obj.setVec("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+        //shader_obj.setVec("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
+        //shader_obj.setVec("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
         shader_obj.setFloat("material.shininess", 32.0f);
         shader_obj.setVec("light.pos", light_pos);
-        shader_obj.setVec("light.ambient", 0.2f * glm::vec3(sin, cos, 1 - sin) * light_color);
-        shader_obj.setVec("light.diffuse", 0.5f * glm::vec3(sin, cos, 1 - sin) * light_color);
-        shader_obj.setVec("light.specular", 1.0f * glm::vec3(sin, cos, 1 - sin) * light_color);
+        glm::vec3 time_factor = switch_change_light_color ? glm::vec3(sin, cos, 1 - sin) : glm::vec3(1.0f);
+        shader_obj.setVec("light.ambient", 0.2f * time_factor * light_color);
+        shader_obj.setVec("light.diffuse", 0.5f * time_factor * light_color);
+        shader_obj.setVec("light.specular", 1.0f * time_factor * light_color);
+        
 
         if (0) { //CPU变换
             glm::mat4 model(1.0f);
@@ -321,13 +326,19 @@ int main()
             glm::mat4 model(1.0f);
             //model = glm::rotate(model, glm::radians(25*(time_point + i)), glm::vec3(0, 1.0f, 1.0f));
             model = glm::translate(model, cube_positions[i]);
-            model = glm::rotate(model, glm::radians(25.0f * (time_point + i)), glm::vec3(0, 1.0f, 1.0f));
+            if (switch_rotate_objects) {
+                model = glm::rotate(model, glm::radians(25.0f * (time_point + i)), glm::vec3(0, 1.0f, 1.0f));
+            }
+            else
+            {
+                model = glm::rotate(model, glm::radians(25.0f * (i)), glm::vec3(0, 1.0f, 1.0f));
+            }
             shader_obj.setMat4("model", model);
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
         shader_light_source.use();
-        shader_light_source.setVec("color", glm::vec3(sin, cos, 1 - sin)/*glm::vec3(1.0f)*/);
+        shader_light_source.setVec("color", time_factor);
         glm::mat4 model(1.0f);
         model = glm::translate(model, light_pos);
         model = glm::scale(model, glm::vec3(0.5));

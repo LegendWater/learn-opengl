@@ -33,15 +33,17 @@ in vec3 Normal;
 in vec2 TexCoord;
 out vec4 FragColor;
 
-uniform sampler2D tex;
-uniform sampler2D tex2;
+//uniform sampler2D tex;
+//uniform sampler2D tex2;
 
 uniform vec3 view_pos;
 
 struct Material {
-	vec3 ambient;
-	vec3 diffuse;
-	vec3 specular;
+	//vec3 ambient; 说删就删了, 只活了一集
+	//vec3 diffuse;
+	sampler2D diffuse; //sampler2D是不透明类型, 不能用除了uniform以外的方式实例化
+	//vec3 specular;
+	sampler2D specular;
 	float shininess;
 };
 
@@ -56,14 +58,15 @@ uniform Material material;
 uniform Light light; //如果有好多光照呢
 
 vec4 ambient() {
-	vec3 ambient_color = light.ambient * material.ambient;
+	vec3 ambient = vec3(texture(material.diffuse, TexCoord));
+	vec3 ambient_color = light.ambient * ambient;
 	return vec4(ambient_color, 1.0);
 }
 
 vec4 diffuse(vec3 light_direction, vec3 normal) {
 	float diff = dot(-light_direction, normal); //漫反射强度, TODO: 把Normal的归一化放在顶点着色器做
 	diff = max(diff, 0);
-	vec3 diffuse_color = diff * material.diffuse * light.diffuse;
+	vec3 diffuse_color = diff * light.diffuse * vec3(texture(material.diffuse, TexCoord));
 	
 	return vec4(diffuse_color, 1.0);
 }
@@ -72,7 +75,7 @@ vec4 specular(vec3 light_direction, vec3 normal, vec3 view_direction) {
 	vec3 reflect_direction = reflect(light_direction, normal);
 	float spec = dot(reflect_direction, view_direction); //镜面反光强度
 	spec = pow(max(spec, 0.0), material.shininess);
-	vec3 reflect_color = spec * material.specular * light.specular;
+	vec3 reflect_color = spec * light.specular * vec3(texture(material.specular, TexCoord));
 	return vec4(reflect_color, 1.0);
 }
 
@@ -86,9 +89,10 @@ void main() {
 	vec3 normal = normalize(Normal); //面法线向量
 	vec3 view_direction = normalize(view_pos - worldFragPos); //片段位置指向观察者方向
 
-	vec4 tex_color = mix(texture(tex, TexCoord), texture(tex2, TexCoord), 0.0);
+	//vec4 tex_color = mix(texture(tex, TexCoord), texture(tex2, TexCoord), 0.0);
 	vec4 phone_color = phone(light_direction, normal, view_direction);
-	FragColor = mix(tex_color, phone_color, 0.95);
+	//FragColor = mix(tex_color, phone_color, 0.95);
+	FragColor = phone_color;
 }
 )";
 
