@@ -33,66 +33,78 @@ in vec3 Normal;
 in vec2 TexCoord;
 out vec4 FragColor;
 
-//uniform sampler2D tex;
-//uniform sampler2D tex2;
 
 uniform vec3 view_pos;
 
 struct Material {
-	//vec3 ambient; 说删就删了, 只活了一集
-	//vec3 diffuse;
 	sampler2D diffuse; //sampler2D是不透明类型, 不能用除了uniform以外的方式实例化
-	//vec3 specular;
 	sampler2D specular;
 	float shininess;
 };
 
-struct Light {
+struct PointLight {
 	vec3 pos;
 	vec3 ambient; //把光照的环境光强度之类的属性设置给材质会不会更好一点?
 	vec3 diffuse;
 	vec3 specular;
+
+	float constant; //光线的常量衰减系数
+	float linear; //光线的线性衰减系数
+	float quadratic; //光线的二次衰减系数
 };
 
 uniform Material material;
-uniform Light light; //如果有好多光照呢
+#define POINT_LIGHT_NUM 4 //好多光照来啦
+uniform PointLight light[POINT_LIGHT_NUM];
 
-vec4 ambient() {
+vec4 ambient(PointLight light, float attenuation) {
 	vec3 ambient = vec3(texture(material.diffuse, TexCoord));
 	vec3 ambient_color = light.ambient * ambient;
+	ambient_color *= attenuation;
 	return vec4(ambient_color, 1.0);
 }
 
-vec4 diffuse(vec3 light_direction, vec3 normal) {
-	float diff = dot(-light_direction, normal); //漫反射强度, TODO: 把Normal的归一化放在顶点着色器做
+vec4 diffuse(PointLight light, vec3 light_direction, vec3 normal, float attenuation) {
+	float diff = dot(-light_direction, normal); //漫反射强度
 	diff = max(diff, 0);
 	vec3 diffuse_color = diff * light.diffuse * vec3(texture(material.diffuse, TexCoord));
+	diffuse_color *= attenuation;
 	
 	return vec4(diffuse_color, 1.0);
 }
 
-vec4 specular(vec3 light_direction, vec3 normal, vec3 view_direction) {
+vec4 specular(PointLight light, vec3 light_direction, vec3 normal, vec3 view_direction, float attenuation) {
 	vec3 reflect_direction = reflect(light_direction, normal);
 	float spec = dot(reflect_direction, view_direction); //镜面反光强度
 	spec = pow(max(spec, 0.0), material.shininess);
 	vec3 reflect_color = spec * light.specular * vec3(texture(material.specular, TexCoord));
+	reflect_color *= attenuation;
+
 	return vec4(reflect_color, 1.0);
 }
 
-vec4 phone(vec3 light_direction, vec3 normal, vec3 view_direction) {
-	return ambient() + diffuse(light_direction, normal) + specular(light_direction, normal, view_direction);
+vec4 phone(PointLight light, vec3 light_direction, vec3 normal, vec3 view_direction, float attenuation) {
+	return ambient(light, attenuation) + 
+			diffuse(light, light_direction, normal, attenuation) + 
+			specular(light, light_direction, normal, view_direction, attenuation);
 }
 
 void main() {
 
-	vec3 light_direction = normalize(worldFragPos - light.pos); //光线出射方向
-	vec3 normal = normalize(Normal); //面法线向量
-	vec3 view_direction = normalize(view_pos - worldFragPos); //片段位置指向观察者方向
+	vec3 normal = normalize(Normal); //面法线向量, TODO: 把Normal的归一化放在顶点着色器做
+	vec4 phone_light = vec4(0.0); //最终的光照颜色
+	for (int i = 0; i < POINT_LIGHT_NUM; i++) {
+		vec3 light_direction = normalize(worldFragPos - light[i].pos); //光线出射方向
+		vec3 view_direction = normalize(view_pos - worldFragPos); //片段位置指向观察者方向
+		float distance = length(worldFragPos - light[i].pos);
+		float attenuation = 1.0 / (light[i].constant + light[i].linear * distance + light[i].quadratic * pow(distance, 2)); //光源因片段位置而衰减
+		distance = length(worldFragPos - view_pos);
+		attenuation *= 1.0 / (light[i].constant + light[i].linear * distance + light[i].quadratic * pow(distance, 2)); //光源因观察者位置而衰减
 
-	//vec4 tex_color = mix(texture(tex, TexCoord), texture(tex2, TexCoord), 0.0);
-	vec4 phone_color = phone(light_direction, normal, view_direction);
-	//FragColor = mix(tex_color, phone_color, 0.95);
-	FragColor = phone_color;
+		phone_light += phone(light[i], light_direction, normal, view_direction, attenuation);
+	}
+	
+	FragColor = phone_light;
 }
 )";
 
@@ -114,9 +126,19 @@ static const char* shader_light_source_frag = R"(
 out vec4 FragColor;
 
 uniform vec3 color;
+uniform vec3 pos; //光源世界位置
+uniform vec3 view_pos;
+
+uniform float constant; //点光源的常量衰减系数
+uniform float linear; //点光源的线性衰减系数
+uniform float quadratic; //点光源的二次衰减系数
 
 void main() {
-	FragColor = vec4(color, 1.0);
+	float distance = length(pos - view_pos);
+	float attenuation = 1.0 / (constant + linear * distance + quadratic * pow(distance, 2));
+	vec3 light_color = color * attenuation;
+
+	FragColor = vec4(light_color, 1.0);
 }
 )";
 

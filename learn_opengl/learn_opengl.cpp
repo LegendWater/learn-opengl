@@ -13,6 +13,7 @@
 #include "MTexture.h"
 #include "MCamera.h"
 #include <chrono>
+#include <string>
 
 typedef struct Vertex {
     glm::vec3 pos;
@@ -42,8 +43,8 @@ static int win_width = 900, win_height = 900;
 MCamera cam;
 static float time_point = 0.f, prev_time_point = 0.f, time_delta = 0.f; //这一帧的时间、上一帧的时间、时间间隔, 单位秒
 
-static bool switch_change_light_color = true; //光源的颜色随时间改变
-static bool switch_rotate_objects = true; //物体随时间自转
+static bool switch_change_light_color = false; //光源的颜色随时间改变
+static bool switch_rotate_objects = false; //物体随时间自转
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 
@@ -221,12 +222,17 @@ int main()
         { -0.5f,  0.5f,  0.5f},
         { -0.5f,  0.5f, -0.5f}
     };
-    //光源在世界坐标系中的位置
-    const glm::vec3 light_pos = {
-        0.f,  0.f, -3.5f
+    //4个光源在世界坐标系中的位置
+    const glm::vec3 light_pos[] = {
+        { 0.f,  0.f, -3.5f },
+        { 2.3f, -3.3f, -4.0f},
+        { -4.0f,  2.0f, -12.0f },
+        { 0.0f,  1.0f, -13.0f }
     };
     //光源颜色
     const glm::vec3 light_color = {1.0f, 1.0f, 1.0f};
+    //光线衰减系数
+    const glm::vec3 light_attenuation = {1.0f, 0.025f, 0.0047f};
 
     GLuint VAO_light, VBO_light, EBO_light;
     glGenVertexArrays(1, &VAO_light);
@@ -243,7 +249,10 @@ int main()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof indices, indices, GL_STATIC_DRAW);
 
     shader_light_source.use();
-    shader_light_source.setVec("color", light_color);
+    //shader_light_source.setVec("color", light_color);
+    shader_light_source.setFloat("constant", light_attenuation[0]);
+    shader_light_source.setFloat("linear", light_attenuation[1]);
+    shader_light_source.setFloat("quadratic", light_attenuation[2]);
     CHECK_GL_ERROR();
 #pragma endregion light source define
 
@@ -270,9 +279,9 @@ int main()
     glDepthFunc(GL_LESS);
     CHECK_GL_ERROR();
 
-    glClearColor(0, 0, 0, 1.0);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClearDepth(1.0f);
-    unsigned long long frame_count = 0;
+    unsigned long long frame_count = 0; //总渲染帧数统计
     auto start_time = std::chrono::steady_clock::now();
     while (!glfwWindowShouldClose(window))
     {
@@ -291,22 +300,33 @@ int main()
         float sin = glm::sin(time_point);
         float cos = glm::cos(time_point);
 
+        glm::vec3 light_color_frame = light_color;
+        if (switch_change_light_color) {
+            light_color_frame *= glm::vec3(sin, glm::cos(time_point + 1), 0.5f + (glm::sin(time_point + 2) + glm::cos(time_point + 3)) / 2) + 0.5f;
+        }
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shader_obj.use();
         shader_obj.setMat4("projection", cam.getProjection());
         shader_obj.setMat4("view", cam.getView());
         shader_obj.setVec("view_pos", cam.getPos());
-        shader_obj.setVec("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
+        //shader_obj.setVec("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
         //shader_obj.setVec("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
         //shader_obj.setVec("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
         shader_obj.setFloat("material.shininess", 32.0f);
-        shader_obj.setVec("light.pos", light_pos);
-        glm::vec3 time_factor = switch_change_light_color ? glm::vec3(sin, cos, 1 - sin) : glm::vec3(1.0f);
-        shader_obj.setVec("light.ambient", 0.2f * time_factor * light_color);
-        shader_obj.setVec("light.diffuse", 0.5f * time_factor * light_color);
-        shader_obj.setVec("light.specular", 1.0f * time_factor * light_color);
-        
+        for (int i = 0; i < sizeof light_pos / sizeof glm::vec3; i++)
+        {
+            std::string light_name = "light[" + std::to_string(i) + "]";
+            glm::vec3 light_color_i = glm::vec3(glm::sin((float)i) + 0.6, glm::cos((float)i) + 0.6, 1 - glm::sin((float)i) + 0.6) * light_color_frame;
+            shader_obj.setVec((light_name + ".pos").c_str(), light_pos[i]);
+            shader_obj.setVec((light_name + ".ambient").c_str(), 0.2f * light_color_i);
+            shader_obj.setVec((light_name + ".diffuse").c_str(), 0.5f * light_color_i);
+            shader_obj.setVec((light_name + ".specular").c_str(), 1.0f * light_color_i);
+            shader_obj.setFloat((light_name + ".constant").c_str(), light_attenuation[0]);
+            shader_obj.setFloat((light_name + ".linear").c_str(), light_attenuation[1]);
+            shader_obj.setFloat((light_name + ".quadratic").c_str(), light_attenuation[2]);
+        }
 
         if (0) { //CPU变换
             glm::mat4 model(1.0f);
@@ -324,7 +344,9 @@ int main()
         glBindVertexArray(VAO);
         for (int i = 0; i < 10; i++) { //绘制10个立方体
             glm::mat4 model(1.0f);
-            //model = glm::rotate(model, glm::radians(25*(time_point + i)), glm::vec3(0, 1.0f, 1.0f));
+            if (switch_rotate_objects) {
+                model = glm::rotate(model, glm::radians(25 * (time_point + i)), glm::vec3(1.0f, -1.0f, -1.0f));
+            }
             model = glm::translate(model, cube_positions[i]);
             if (switch_rotate_objects) {
                 model = glm::rotate(model, glm::radians(25.0f * (time_point + i)), glm::vec3(0, 1.0f, 1.0f));
@@ -337,16 +359,24 @@ int main()
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
-        shader_light_source.use();
-        shader_light_source.setVec("color", time_factor);
-        glm::mat4 model(1.0f);
-        model = glm::translate(model, light_pos);
-        model = glm::scale(model, glm::vec3(0.5));
-        shader_light_source.setMat4("model", model);
-        shader_light_source.setMat4("view", cam.getView());
-        shader_light_source.setMat4("projection", cam.getProjection());
         glBindVertexArray(VAO_light);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        shader_light_source.use();
+        for (int i = 0; i < sizeof light_pos / sizeof glm::vec3; i++)
+        {
+            glm::vec3 light_color_i = glm::vec3(glm::sin((float)i) + 0.6, glm::cos((float)i) + 0.6, 1 - glm::sin((float)i) + 0.6) * light_color_frame;
+            shader_light_source.setVec("color", light_color_i);
+            shader_light_source.setVec("pos", light_pos[i]);
+            shader_light_source.setVec("view_pos", cam.getPos());
+            glm::mat4 model(1.0f);
+            model = glm::translate(model, light_pos[i]);
+            model = glm::scale(model, glm::vec3(0.25));
+            shader_light_source.setMat4("model", model);
+            shader_light_source.setMat4("view", cam.getView());
+            shader_light_source.setMat4("projection", cam.getProjection());
+
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
+        
 
         glfwSwapBuffers(window);
 
@@ -367,7 +397,7 @@ int main()
     glfwTerminate();
 
     auto time_total = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
-    std::printf("\nrender %lld frames in %lld seconds, average fps=%.2f\n", frame_count, time_total / 1000, frame_count / (time_total / 1000.0));
+    std::printf("\nrender %lld frames in %.2f seconds, average fps=%.2f\n", frame_count, time_total / 1000.0, frame_count / (time_total / 1000.0));
 
     return 0;
 }
