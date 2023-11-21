@@ -104,13 +104,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>E:\Libs;F:\wheels;E:\software\opengl\glm-0.9.9.8\glm;E:\software\opengl\glfw-3.3.8.bin.WIN64\include;E:\software\opengl\glad\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\Libs\assimp\include;E:\Libs;F:\wheels;E:\software\opengl\glm-0.9.9.8\glm;E:\software\opengl\glfw-3.3.8.bin.WIN64\include;E:\software\opengl\glad\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>E:\software\opengl\glfw-3.3.8.bin.WIN64\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>E:\Libs\assimp\build\lib\Debug;E:\software\opengl\glfw-3.3.8.bin.WIN64\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp-vc143-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -133,12 +133,16 @@
     <ClCompile Include="E:\software\opengl\glad\src\glad.c" />
     <ClCompile Include="learn_opengl.cpp" />
     <ClCompile Include="MCamera.cpp" />
+    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="Model.cpp" />
     <ClCompile Include="MShader.cpp" />
     <ClCompile Include="MTexture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="macro.h" />
     <ClInclude Include="MCamera.h" />
+    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="Model.h" />
     <ClInclude Include="MShader.h" />
     <ClInclude Include="MTexture.h" />
     <ClInclude Include="shaders.h" />

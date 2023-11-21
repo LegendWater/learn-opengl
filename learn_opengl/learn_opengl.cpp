@@ -15,7 +15,7 @@
 #include <chrono>
 #include <string>
 
-typedef struct Vertex {
+struct Vertex {
     glm::vec3 pos;
     glm::vec3 normal;
     glm::vec2 tex_coord;
@@ -28,15 +28,15 @@ typedef struct Vertex {
     }
     Vertex(glm::vec3 pos, glm::vec3 normal, glm::vec2 tex_coord)
     :pos(pos), normal(normal), tex_coord(tex_coord) {}
-}Vertex;
+};
 
-typedef struct Point3D {
+struct Point3D {
     glm::vec3 pos;
 
     Point3D() : pos(0) {}
     Point3D(float x, float y, float z) : pos({ x, y, z }) {}
     Point3D(glm::vec3 pos) : pos(pos) {}
-}Point3D;
+};
 
 //虽然不想但是好像除了把变量放在这也没有更好的办法了
 static int win_width = 900, win_height = 900;
