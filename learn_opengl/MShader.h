@@ -49,5 +49,6 @@ public:
 		CHECK_GL_ERROR();
 	}
 	void setMat4(const char* param_name, glm::mat4 mat);
+	void setBool(const char* param_name, bool val);
 };
 #endif // !MSHADER_H

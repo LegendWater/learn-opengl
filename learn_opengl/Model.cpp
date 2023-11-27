@@ -1,7 +1,4 @@
 #include "Model.h"
-#ifndef STB_IMAGE_IMPLEMENTATION
-#define STB_IMAGE_IMPLEMENTATION
-#endif // !STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
 Model::Model(const char* path)
@@ -28,23 +25,24 @@ bool Model::loadModel(std::string path)
 		std::cerr << "invalid model path" << std::endl;
 		return false;
 	}
-	dir = path.substr(0, std::max(slash_pos1, std::min(slash_pos2, slash_pos3)));
+	dir = path.substr(0, std::max(slash_pos1 == std::string::npos ? 0 : slash_pos1, std::min(slash_pos2, slash_pos3)));
 
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
 
-	if (!scene || scene->mFlags | AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
 		std::cerr << "model " << path << " read failed" << std::endl;
 		return false;
 	}
 
 	processNode(scene->mRootNode, scene);
+	return true;
 }
 
 void Model::processNode(aiNode* node, const aiScene* scene)
 {
 	//处理每个结点的mesh
-	for (auto i = 0; i < node->mNumMeshes; ++i)
+	for (unsigned int i = 0; i < node->mNumMeshes; ++i)
 	{
 		auto& mesh_ptr = scene->mMeshes[node->mMeshes[i]];
 		auto mesh = processMesh(mesh_ptr, scene);
@@ -52,7 +50,7 @@ void Model::processNode(aiNode* node, const aiScene* scene)
 	}
 
 	//递归处理结点的所有子结点
-	for (auto i = 0; i < node->mNumChildren; i++)
+	for (unsigned int i = 0; i < node->mNumChildren; i++)
 	{
 		processNode(node->mChildren[i], scene);
 	}
@@ -60,12 +58,14 @@ void Model::processNode(aiNode* node, const aiScene* scene)
 
 Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 {
-	std::vector<Vertex> vertices(mesh->mNumVertices);
-	std::vector<unsigned int> indices(mesh->mNumFaces * 3); //暂时认为索引的数量是这么多
+	std::vector<Vertex> vertices;
+	vertices.reserve(mesh->mNumVertices);
+	std::vector<unsigned int> indices;
+	indices.reserve(mesh->mNumFaces * 3); //暂时认为索引的数量是这么多
 	std::vector<Texture> textures;
 
 	//Vertex
-	for (auto i = 0; i < mesh->mNumVertices; i++)
+	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 	{
 		Vertex v;
 		//顶点
@@ -91,10 +91,10 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 		vertices.emplace_back(v);
 	}
 	//index
-	for (auto i = 0; i < mesh->mNumFaces; i++)
+	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
 	{
 		auto& face = mesh->mFaces[i];
-		for (auto j = 0; j < face.mNumIndices; j++)
+		for (unsigned int j = 0; j < face.mNumIndices; j++)
 		{
 			indices.emplace_back(face.mIndices[j]);
 		}
@@ -114,7 +114,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName)
 {
 	std::vector<Texture> textures;
-	for (auto i = 0; i < mat->GetTextureCount(type); i++)
+	for (unsigned int i = 0, count = mat->GetTextureCount(type); i < count; i++)
 	{
 		aiString path;
 		mat->GetTexture(type, i, &path);
@@ -146,15 +146,16 @@ int Model::textureFromFile(std::string model_path) const
 
 	std::string whole_path = dir + '/' + model_path;
 	int width, height, channel;
+	stbi_set_flip_vertically_on_load(0);
 	unsigned char* data = stbi_load(whole_path.c_str(), &width, &height, &channel, 0);
 	if (data) {
 		GLuint texid;
 		glGenTextures(1, &texid);
 		glBindTexture(GL_TEXTURE_2D, texid);
-		glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR/*_MIPMAP_LINEAR*/);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
 		GLint format;
 		switch (channel)

@@ -29,3 +29,8 @@ void MShader::setMat4(const char* param_name, glm::mat4 mat)
 {
 	glUniformMatrix4fv(glGetUniformLocation(program, param_name), 1, GL_FALSE, glm::value_ptr(mat));
 }
+
+void MShader::setBool(const char* param_name, bool val)
+{
+	glUniform1i(glGetUniformLocation(program, param_name), val ? 1 : 0);
+}

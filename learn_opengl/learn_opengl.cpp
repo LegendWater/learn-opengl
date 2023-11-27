@@ -14,21 +14,22 @@
 #include "MCamera.h"
 #include <chrono>
 #include <string>
+#include "Model.h"
 
-struct Vertex {
-    glm::vec3 pos;
-    glm::vec3 normal;
-    glm::vec2 tex_coord;
-
-    Vertex() = default;
-    Vertex(float x, float y, float z, float nx, float ny, float nz, float s, float t) {
-        pos = glm::vec3(x, y, z);
-        normal = glm::vec3(nx, ny, nz);
-        tex_coord = glm::vec2(s, t);
-    }
-    Vertex(glm::vec3 pos, glm::vec3 normal, glm::vec2 tex_coord)
-    :pos(pos), normal(normal), tex_coord(tex_coord) {}
-};
+//struct Vertex {
+//    glm::vec3 pos;
+//    glm::vec3 normal;
+//    glm::vec2 tex_coord;
+//
+//    Vertex() = default;
+//    Vertex(float x, float y, float z, float nx, float ny, float nz, float s, float t) {
+//        pos = glm::vec3(x, y, z);
+//        normal = glm::vec3(nx, ny, nz);
+//        tex_coord = glm::vec2(s, t);
+//    }
+//    Vertex(glm::vec3 pos, glm::vec3 normal, glm::vec2 tex_coord)
+//    :pos(pos), normal(normal), tex_coord(tex_coord) {}
+//};
 
 struct Point3D {
     glm::vec3 pos;
@@ -39,7 +40,8 @@ struct Point3D {
 };
 
 //虽然不想但是好像除了把变量放在这也没有更好的办法了
-static int win_width = 900, win_height = 900;
+static int screen_width = 0, screen_height = 0;
+static int win_width = 1500, win_height = 1500;
 MCamera cam;
 static float time_point = 0.f, prev_time_point = 0.f, time_delta = 0.f; //这一帧的时间、上一帧的时间、时间间隔, 单位秒
 
@@ -56,18 +58,46 @@ int main()
 {
     std::cout << "Hello World!\n";
 
-    glm::vec4 test_vec = { 1.0, 1.0, 0.0, 1.0 };
+    /*glm::vec4 test_vec = { 1.0, 1.0, 0.0, 1.0 };
     glm::mat4 trans_mat(1.0);
     trans_mat = glm::translate(trans_mat, glm::vec3(1.0, 2.0, 3.0));
-    test_vec = trans_mat * test_vec;
+    test_vec = trans_mat * test_vec;*/
 
     GLFWwindow* window = createWindow(win_width, win_height);
-    glfwSetWindowPos(window, (1920 - win_width) / 2, (1080 - win_height) / 2);
+    static MMonitorInfo biggest = getBiggestMonitorInfo();
+    screen_width = biggest.width, screen_height = biggest.height;
+    glfwSetWindowPos(window, (screen_width - win_width) / 2, (screen_height - win_height) / 2);
     glfwSetCursorPos(window, static_cast<double>(win_width / 2), static_cast<double>(win_height / 2));
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetKeyCallback(window, key_callback);
     glfwSetScrollCallback(window, scroll_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSwapInterval(1); //核显在运行时不加这行会出现帧数过高的问题
+
+    /*auto check_binding = []() {
+        GLint pre_vao, pre_ebo;
+        glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &pre_vao);
+        glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &pre_ebo);
+        std::cout << "binding vao: " << pre_vao << ", binding ebo: " << pre_ebo << std::endl;
+        };
+    GLuint vao_[2], ebo_[2];
+    glGenVertexArrays(2, vao_);
+    glGenBuffers(2, ebo_);
+
+    glBindVertexArray(vao_[0]);
+    check_binding();
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_[0]);
+    check_binding();
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_[1]);
+    check_binding();
+    glBindVertexArray(0);
+    check_binding();
+    glBindVertexArray(vao_[1]);
+    check_binding();
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_[1]);
+    check_binding();
+    glBindVertexArray(vao_[0]);
+    check_binding();*/
 
 #pragma region objects define
     MShader shader_obj(shader_vert, shader_frag);
@@ -152,9 +182,9 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
     glBufferData(GL_ARRAY_BUFFER, sizeof vertices, vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof GLfloat, (void*)0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof GLfloat, (void*)(3 * sizeof GLfloat));
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof GLfloat, (void*)(6 * sizeof GLfloat));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof Vertex, (void*)offsetof(Vertex, pos));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof Vertex, (void*)offsetof(Vertex, normal));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof Vertex, (void*)offsetof(Vertex, tex_coord));
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
@@ -162,8 +192,8 @@ int main()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof indices, indices, GL_STATIC_DRAW);
 
-    MTexture2D tex_box_diffuse(R"(F:\pictures\box(1)_diffuse.png)");
-    MTexture2D tex_box_specular(R"(F:\pictures\box(1)_specular.png)");
+    MTexture2D tex_box_diffuse(R"(D:\3Dmaterials\pictures\box(1)_diffuse.png)");
+    MTexture2D tex_box_specular(R"(D:\3Dmaterials\pictures\box(1)_specular.png)");
 
     shader_obj.use();
     glActiveTexture(GL_TEXTURE0);
@@ -255,10 +285,12 @@ int main()
     shader_light_source.setFloat("quadratic", light_attenuation[2]);
     CHECK_GL_ERROR();
 #pragma endregion light source define
+#pragma region model define
+    Model nanosuit(R"(D:\3Dmaterials\model\nanosuit\nanosuit.obj)");
+    MShader shader_nanosuit(shader_nanosuit_vert, shader_nanosuit_frag);
+#pragma endregion model define
 
     shader_obj.use();
-    //shader_obj.setVec("light_color", light_color); 居然没报错
-    //shader_obj.setVec("object_color", cube_color);
 
     //设置摄像机属性
     glm::vec3 cam_pos(0, 0, 10);
@@ -267,12 +299,6 @@ int main()
     cam.moveTo(cam_pos);
     cam.lookAt(cam_lookat);
     cam.zoomTo(cam_fov);
-
-    ////定义投影矩阵
-    //glm::mat4 projection(1.0f);
-    //projection = glm::perspective(glm::radians(45.0f), win_width * 1.0f / win_height, 0.1f, 100.0f);
-    ////projection = glm::ortho(-5.0f, 5.0f, -5.0f, 5.0f, 1.0f, 100.0f);
-    //shader.setMat4("projection", projection);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glEnable(GL_DEPTH_TEST);
@@ -315,7 +341,7 @@ int main()
         //shader_obj.setVec("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
         //shader_obj.setVec("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
         shader_obj.setFloat("material.shininess", 32.0f);
-        for (int i = 0; i < sizeof light_pos / sizeof glm::vec3; i++)
+        for (int i = 0, light_num = sizeof light_pos / sizeof glm::vec3; i < light_num; i++)
         {
             std::string light_name = "light[" + std::to_string(i) + "]";
             glm::vec3 light_color_i = glm::vec3(glm::sin((float)i) + 0.6, glm::cos((float)i) + 0.6, 1 - glm::sin((float)i) + 0.6) * light_color_frame;
@@ -342,6 +368,10 @@ int main()
         }
         
         glBindVertexArray(VAO);
+        glActiveTexture(GL_TEXTURE0);
+        tex_box_diffuse.bind();
+        glActiveTexture(GL_TEXTURE1);
+        tex_box_specular.bind();
         for (int i = 0; i < 10; i++) { //绘制10个立方体
             glm::mat4 model(1.0f);
             if (switch_rotate_objects) {
@@ -358,6 +388,32 @@ int main()
             shader_obj.setMat4("model", model);
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
+
+        shader_nanosuit.use();
+        glm::mat4 model_nanosuit(1.0f);
+        model_nanosuit = glm::translate(model_nanosuit, cube_positions[0] + glm::vec3(3.0f, 0.0f, 0.0f));
+        model_nanosuit = glm::scale(model_nanosuit, glm::vec3(0.125f));
+        model_nanosuit = glm::rotate(model_nanosuit, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        shader_nanosuit.setMat4("model", model_nanosuit);
+        shader_nanosuit.setMat4("view", cam.getView());
+        shader_nanosuit.setMat4("projection", cam.getProjection());
+        shader_nanosuit.setVec("view_pos", cam.getPos());
+        shader_nanosuit.setBool("material.diffuse_exist", false);
+        shader_nanosuit.setBool("material.specular_exist", false);
+        shader_nanosuit.setFloat("material.shininess", 32.0f);
+        for (int i = 0, light_num = sizeof light_pos / sizeof glm::vec3; i < light_num; i++)
+        {
+            std::string light_name = "light[" + std::to_string(i) + "]";
+            glm::vec3 light_color_i = glm::vec3(glm::sin((float)i) + 0.6, glm::cos((float)i) + 0.6, 1 - glm::sin((float)i) + 0.6) * light_color_frame;
+            shader_nanosuit.setVec((light_name + ".pos").c_str(), light_pos[i]);
+            shader_nanosuit.setVec((light_name + ".ambient").c_str(), 0.2f * light_color_i);
+            shader_nanosuit.setVec((light_name + ".diffuse").c_str(), 0.5f * light_color_i);
+            shader_nanosuit.setVec((light_name + ".specular").c_str(), 1.0f * light_color_i);
+            shader_nanosuit.setFloat((light_name + ".constant").c_str(), light_attenuation[0]);
+            shader_nanosuit.setFloat((light_name + ".linear").c_str(), light_attenuation[1]);
+            shader_nanosuit.setFloat((light_name + ".quadratic").c_str(), light_attenuation[2]);
+        }
+        nanosuit.draw(shader_nanosuit);
 
         glBindVertexArray(VAO_light);
         shader_light_source.use();

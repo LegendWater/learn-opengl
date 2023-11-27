@@ -3,8 +3,8 @@
 
 #ifndef STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
-#endif // !STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#endif // !STB_IMAGE_IMPLEMENTATION
 
 MTexture2D::MTexture2D(int width, int height, TexFormat format, unsigned char* data)
 	:id(-1), width(width), height(height), format(format)

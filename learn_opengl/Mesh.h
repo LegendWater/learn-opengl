@@ -12,6 +12,7 @@ class Vertex
 public:
 	Vertex();
 	Vertex(const glm::vec3& pos, const glm::vec3& normal, const glm::vec2& tex_coord);
+	Vertex(float x, float y, float z, float nx, float ny, float nz, float s, float t);
 	Vertex(Vertex& v);
 	Vertex(Vertex&& v) noexcept;
 	~Vertex();
@@ -27,7 +28,8 @@ class Texture
 {
 public:
 	Texture();
-	Texture(Texture& tex);
+	Texture(const Texture& tex);
+	Texture& operator=(const Texture& tex);
 	Texture(Texture&& tex) noexcept;
 	~Texture();
 
