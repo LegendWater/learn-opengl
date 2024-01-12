@@ -63,7 +63,7 @@ int main()
     trans_mat = glm::translate(trans_mat, glm::vec3(1.0, 2.0, 3.0));
     test_vec = trans_mat * test_vec;*/
 
-    GLFWwindow* window = createWindow(win_width, win_height);
+    GLFWwindow* window = createWindow(win_width, win_height, "", false);
     static MMonitorInfo biggest = getBiggestMonitorInfo();
     screen_width = biggest.width, screen_height = biggest.height;
     glfwSetWindowPos(window, (screen_width - win_width) / 2, (screen_height - win_height) / 2);
@@ -110,47 +110,48 @@ int main()
         Vertex{  5, -5, 0.0,    1.0, 0.0},
         Vertex{ -5, -5, 0.0,    0.0, 0.0},*/
         /*             position               normal               tex*/
+        // Back face
         Vertex{ -0.5f, -0.5f, -0.5f,    0.0f,  0.0f, -1.0f,    0.0f, 0.0f},
+        Vertex{  0.5f,  0.5f, -0.5f,    0.0f,  0.0f, -1.0f,    1.0f, 1.0f},
         Vertex{  0.5f, -0.5f, -0.5f,    0.0f,  0.0f, -1.0f,    1.0f, 0.0f},
         Vertex{  0.5f,  0.5f, -0.5f,    0.0f,  0.0f, -1.0f,    1.0f, 1.0f},
-        Vertex{  0.5f,  0.5f, -0.5f,    0.0f,  0.0f, -1.0f,    1.0f, 1.0f},
-        Vertex{ -0.5f,  0.5f, -0.5f,    0.0f,  0.0f, -1.0f,    0.0f, 1.0f},
         Vertex{ -0.5f, -0.5f, -0.5f,    0.0f,  0.0f, -1.0f,    0.0f, 0.0f},
-
+        Vertex{ -0.5f,  0.5f, -0.5f,    0.0f,  0.0f, -1.0f,    0.0f, 1.0f},
+        // Front face
         Vertex{ -0.5f, -0.5f,  0.5f,    0.0f,  0.0f,  1.0f,    0.0f, 0.0f},
         Vertex{  0.5f, -0.5f,  0.5f,    0.0f,  0.0f,  1.0f,    1.0f, 0.0f},
         Vertex{  0.5f,  0.5f,  0.5f,    0.0f,  0.0f,  1.0f,    1.0f, 1.0f},
         Vertex{  0.5f,  0.5f,  0.5f,    0.0f,  0.0f,  1.0f,    1.0f, 1.0f},
         Vertex{ -0.5f,  0.5f,  0.5f,    0.0f,  0.0f,  1.0f,    0.0f, 1.0f},
         Vertex{ -0.5f, -0.5f,  0.5f,    0.0f,  0.0f,  1.0f,    0.0f, 0.0f},
-
+        // Left face
         Vertex{ -0.5f,  0.5f,  0.5f,   -1.0f,  0.0f,  0.0f,    1.0f, 0.0f},
         Vertex{ -0.5f,  0.5f, -0.5f,   -1.0f,  0.0f,  0.0f,    1.0f, 1.0f},
         Vertex{ -0.5f, -0.5f, -0.5f,   -1.0f,  0.0f,  0.0f,    0.0f, 1.0f},
         Vertex{ -0.5f, -0.5f, -0.5f,   -1.0f,  0.0f,  0.0f,    0.0f, 1.0f},
         Vertex{ -0.5f, -0.5f,  0.5f,   -1.0f,  0.0f,  0.0f,    0.0f, 0.0f},
         Vertex{ -0.5f,  0.5f,  0.5f,   -1.0f,  0.0f,  0.0f,    1.0f, 0.0f},
-
+        // Right face
         Vertex{  0.5f,  0.5f,  0.5f,    1.0f,  0.0f,  0.0f,    1.0f, 0.0f},
+        Vertex{  0.5f, -0.5f, -0.5f,    1.0f,  0.0f,  0.0f,    0.0f, 1.0f},
         Vertex{  0.5f,  0.5f, -0.5f,    1.0f,  0.0f,  0.0f,    1.0f, 1.0f},
         Vertex{  0.5f, -0.5f, -0.5f,    1.0f,  0.0f,  0.0f,    0.0f, 1.0f},
-        Vertex{  0.5f, -0.5f, -0.5f,    1.0f,  0.0f,  0.0f,    0.0f, 1.0f},
-        Vertex{  0.5f, -0.5f,  0.5f,    1.0f,  0.0f,  0.0f,    0.0f, 0.0f},
         Vertex{  0.5f,  0.5f,  0.5f,    1.0f,  0.0f,  0.0f,    1.0f, 0.0f},
-
+        Vertex{  0.5f, -0.5f,  0.5f,    1.0f,  0.0f,  0.0f,    0.0f, 0.0f},
+        // Bottom face
         Vertex{ -0.5f, -0.5f, -0.5f,    0.0f, -1.0f,  0.0f,    0.0f, 1.0f},
         Vertex{  0.5f, -0.5f, -0.5f,    0.0f, -1.0f,  0.0f,    1.0f, 1.0f},
         Vertex{  0.5f, -0.5f,  0.5f,    0.0f, -1.0f,  0.0f,    1.0f, 0.0f},
         Vertex{  0.5f, -0.5f,  0.5f,    0.0f, -1.0f,  0.0f,    1.0f, 0.0f},
         Vertex{ -0.5f, -0.5f,  0.5f,    0.0f, -1.0f,  0.0f,    0.0f, 0.0f},
         Vertex{ -0.5f, -0.5f, -0.5f,    0.0f, -1.0f,  0.0f,    0.0f, 1.0f},
-
+        // Top face
         Vertex{ -0.5f,  0.5f, -0.5f,    0.0f,  1.0f,  0.0f,    0.0f, 1.0f},
+        Vertex{  0.5f,  0.5f,  0.5f,    0.0f,  1.0f,  0.0f,    1.0f, 0.0f},
         Vertex{  0.5f,  0.5f, -0.5f,    0.0f,  1.0f,  0.0f,    1.0f, 1.0f},
         Vertex{  0.5f,  0.5f,  0.5f,    0.0f,  1.0f,  0.0f,    1.0f, 0.0f},
-        Vertex{  0.5f,  0.5f,  0.5f,    0.0f,  1.0f,  0.0f,    1.0f, 0.0f},
-        Vertex{ -0.5f,  0.5f,  0.5f,    0.0f,  1.0f,  0.0f,    0.0f, 0.0f},
-        Vertex{ -0.5f,  0.5f, -0.5f,    0.0f,  1.0f,  0.0f,    0.0f, 1.0f}
+        Vertex{ -0.5f,  0.5f, -0.5f,    0.0f,  1.0f,  0.0f,    0.0f, 1.0f},
+        Vertex{ -0.5f,  0.5f,  0.5f,    0.0f,  1.0f,  0.0f,    0.0f, 0.0f}
     };
     //立方体一个面4个顶点的下标
     int indices[] = {
@@ -211,32 +212,32 @@ int main()
     //光源的结构(将光源视为立方体)
     const glm::vec3 light_points[] = {
         { -0.5f, -0.5f, -0.5f},
+        {  0.5f,  0.5f, -0.5f},
         {  0.5f, -0.5f, -0.5f},
         {  0.5f,  0.5f, -0.5f},
-        {  0.5f,  0.5f, -0.5f},
+        { -0.5f, -0.5f, -0.5f},
+        { -0.5f,  0.5f, -0.5f},
+
+        { -0.5f, -0.5f,  0.5f},
+        {  0.5f, -0.5f,  0.5f},
+        {  0.5f,  0.5f,  0.5f},
+        {  0.5f,  0.5f,  0.5f},
+        { -0.5f,  0.5f,  0.5f},
+        { -0.5f, -0.5f,  0.5f},
+
+        { -0.5f,  0.5f,  0.5f},
         { -0.5f,  0.5f, -0.5f},
         { -0.5f, -0.5f, -0.5f},
-
-        { -0.5f, -0.5f,  0.5f},
-        {  0.5f, -0.5f,  0.5f},
-        {  0.5f,  0.5f,  0.5f},
-        {  0.5f,  0.5f,  0.5f},
-        { -0.5f,  0.5f,  0.5f},
-        { -0.5f, -0.5f,  0.5f},
-
-        { -0.5f,  0.5f,  0.5f},
-        { -0.5f,  0.5f, -0.5f},
-        { -0.5f, -0.5f, -0.5f},
         { -0.5f, -0.5f, -0.5f},
         { -0.5f, -0.5f,  0.5f},
         { -0.5f,  0.5f,  0.5f},
 
         {  0.5f,  0.5f,  0.5f},
+        {  0.5f, -0.5f, -0.5f},
         {  0.5f,  0.5f, -0.5f},
         {  0.5f, -0.5f, -0.5f},
-        {  0.5f, -0.5f, -0.5f},
-        {  0.5f, -0.5f,  0.5f},
         {  0.5f,  0.5f,  0.5f},
+        {  0.5f, -0.5f,  0.5f},
 
         { -0.5f, -0.5f, -0.5f},
         {  0.5f, -0.5f, -0.5f},
@@ -246,11 +247,11 @@ int main()
         { -0.5f, -0.5f, -0.5f},
 
         { -0.5f,  0.5f, -0.5f},
+        {  0.5f,  0.5f,  0.5f},
         {  0.5f,  0.5f, -0.5f},
         {  0.5f,  0.5f,  0.5f},
-        {  0.5f,  0.5f,  0.5f},
-        { -0.5f,  0.5f,  0.5f},
-        { -0.5f,  0.5f, -0.5f}
+        { -0.5f,  0.5f, -0.5f},
+        { -0.5f,  0.5f,  0.5f}
     };
     //4个光源在世界坐标系中的位置
     const glm::vec3 light_pos[] = {
@@ -305,6 +306,9 @@ int main()
     glDepthFunc(GL_LESS);
     CHECK_GL_ERROR();
 
+    //启用面剔除
+    glEnable(GL_CULL_FACE);
+
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClearDepth(1.0f);
     unsigned long long frame_count = 0; //总渲染帧数统计
@@ -333,6 +337,8 @@ int main()
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+#define DRAW_BOXES 1
+#if defined DRAW_BOXES && DRAW_BOXES == 1
         shader_obj.use();
         shader_obj.setMat4("projection", cam.getProjection());
         shader_obj.setMat4("view", cam.getView());
@@ -389,6 +395,9 @@ int main()
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
+#endif
+#define DRAW_NANOSUIT 1
+#if defined DRAW_NANOSUIT && DRAW_NANOSUIT == 1
         shader_nanosuit.use();
         glm::mat4 model_nanosuit(1.0f);
         model_nanosuit = glm::translate(model_nanosuit, cube_positions[0] + glm::vec3(3.0f, 0.0f, 0.0f));
@@ -414,6 +423,10 @@ int main()
             shader_nanosuit.setFloat((light_name + ".quadratic").c_str(), light_attenuation[2]);
         }
         nanosuit.draw(shader_nanosuit);
+#endif // DRAW_NANOSUIT && DRAW_NANOSUIT == 1
+
+#define DRAW_LIGHT_SOURCE 1
+#if defined DRAW_LIGHT_SOURCE && DRAW_LIGHT_SOURCE == 1
 
         glBindVertexArray(VAO_light);
         shader_light_source.use();
@@ -432,7 +445,7 @@ int main()
 
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
-        
+#endif // DRAW_LIGHT_SOURCE && DRAW_LIGHT_SOURCE == 1       
 
         glfwSwapBuffers(window);
 
