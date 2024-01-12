@@ -485,7 +485,7 @@ int main()
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
     static double last_x = static_cast<double>(win_width / 2), last_y = static_cast<double>(win_height / 2);
-    static const double move_rate = 0.12;
+    constexpr double move_rate = 0.12;
     //计算pitch俯仰角、yaw偏航角, 不考虑roll翻滚角
     float xoffset = (last_x - xpos) * move_rate;
     float yoffset = (last_y - ypos) * move_rate;
@@ -503,9 +503,9 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    static const float move_rate = 5.0f;
-    float cam_move = time_delta * move_rate;
+    constexpr float move_rate = 5.0f;
     if (action == GLFW_REPEAT || action == GLFW_PRESS) {
+        float cam_move = time_delta * move_rate;
         switch (key)
         {
         case GLFW_KEY_A:
@@ -535,7 +535,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    static const float move_rate = 1.0f;
+    constexpr float move_rate = 1.0f;
     float delta_zoom = -glm::radians(yoffset) * move_rate;
     cam.zoom(delta_zoom);
 }
